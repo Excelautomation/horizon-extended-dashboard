@@ -1,7 +1,13 @@
 import Alpine from 'alpinejs';
 import ApexCharts from 'apexcharts'
+import intersect from '@alpinejs/intersect'
 
-window.Alpine = Alpine;
+Alpine.plugin(intersect)
+
+Alpine.start()
+
 window.apex = ApexCharts;
 
-Alpine.start();
+// import './bootstrap';
+// window.Alpine = Alpine;
+// Alpine.start();

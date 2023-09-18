@@ -26,7 +26,11 @@ class JobList extends Component
         $this->type = $type;
         $this->queue = $queue;
 
-        $this->jobs = $this->getJobs()->toArray();
+        $jobs = $this->getJobs();
+
+        if ( $jobs->count() > 0 ) {
+            $this->jobs = $this->getJobs()->toArray();
+        }
     }
 
     public function render(): View

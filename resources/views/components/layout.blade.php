@@ -208,8 +208,8 @@
 
     </div>
 </main>
-@livewireScripts
+@livewireScriptConfig
 @livewireChartsScripts
-<script src="{{ asset('vendor/extended-horizon-dashboard/app.js') }}" defer></script>
+{{--<script src="{{ asset('vendor/extended-horizon-dashboard/app.js') }}" defer></script>--}}
 </body>
 </html>

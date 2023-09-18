@@ -14,7 +14,8 @@
         "php": "^8.0",
         "asantibanez/livewire-charts": "3.0.0",
         "ext-posix": "*",
-        "ext-pcntl": "*"
+        "ext-pcntl": "*",
+        "livewire/livewire": "^3.0"
     },
     "autoload":{
         "psr-4":{

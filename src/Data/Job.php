@@ -10,18 +10,61 @@ use VincentBean\HorizonDashboard\Models\JobStatistic;
 class Job implements Arrayable
 {
     public function __construct(
-        public string $id,
-        public string $connection,
-        public string $queue,
-        public string $name,
-        public string $status,
-        public array $payload,
+        public string  $id,
+        public string  $connection,
+        public string  $queue,
+        public string  $name,
+        public string  $status,
+        public array   $payload,
         public ?string $exception = '',
         public ?Carbon $failedAt = null,
         public ?Carbon $completedAt = null,
         public ?Carbon $reservedAt = null,
         public ?string $retriedBy = null
-    ) {
+    )
+    {
+    }
+
+    public static function fromStdClass(\stdClass $class): static
+    {
+        return new static(
+            $class->id,
+            $class->connection ?? '',
+            $class->queue ?? '',
+            $class->name ?? '',
+            $class->status ?? '',
+            json_decode($class->payload, true),
+            $class->exception ?? '',
+            blank($class->failed_at) ? null : Carbon::createFromTimestamp($class->failed_at ?? 0),
+            blank($class->completed_at) ? null : Carbon::createFromTimestamp($class->completed_at ?? 0),
+            blank($class->reserved_at) ? null : Carbon::createFromTimestamp($class->reserved_at ?? 0),
+            $class->retried_by ?? null
+        );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id'           => $this->id,
+            'connection'   => $this->connection,
+            'queue'        => $this->queue,
+            'name'         => $this->name,
+            'status'       => $this->status,
+            'payload'      => $this->payload,
+            'exception'    => $this->exception,
+            'failed_at'    => $this->failedAt?->timestamp == 0 || null ? '' : $this->failedAt->toDateTimeString(),
+            'completed_at' => $this->completedAt?->timestamp == 0 || null ? '' : $this->completedAt->toDateTimeString(),
+            'reserved_at'  => $this->reservedAt?->timestamp == 0 || null ? '' : $this->reservedAt->toDateTimeString(),
+            'retried_by'   => $this->retriedBy,
+            'viewData'     => [
+                'tries'         => $this->getTriesString(),
+                'tags'          => $this->getTagString(),
+                'pushed_at'     => Carbon::createFromTimestamp($this->payload['pushedAt'] ?? 0)->toDateTimeString(),
+                'runtime'       => optional($this->getStatistic())->runtime,
+                'delayed'       => $this->isDelayed(),
+                'delayed_until' => $this->getDelayedUntil()
+            ]
+        ];
     }
 
     public function getTriesString(): string
@@ -70,47 +113,5 @@ class Job implements Arrayable
         }
 
         return $command->delay->toDateTimeString();
-    }
-
-    public static function fromStdClass(\stdClass $class): static
-    {
-        return new static(
-            $class->id,
-            $class->connection ?? '',
-            $class->queue ?? '',
-            $class->name ?? '',
-            $class->status ?? '',
-            json_decode($class->payload, true),
-            $class->exception ?? '',
-            blank($class->failed_at) ? null : Carbon::createFromTimestamp($class->failed_at ?? 0),
-            blank($class->completed_at) ? null : Carbon::createFromTimestamp($class->completed_at ?? 0),
-            blank($class->reserved_at) ? null : Carbon::createFromTimestamp($class->reserved_at ?? 0),
-            $class->retried_by ?? null
-        );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'connection' => $this->connection,
-            'queue' => $this->queue,
-            'name' => $this->name,
-            'status' => $this->status,
-            'payload' => $this->payload,
-            'exception' => $this->exception,
-            'failed_at' => $this->failedAt->timestamp == 0 ? '' : $this->failedAt->toDateTimeString(),
-            'completed_at' => $this->completedAt->timestamp == 0 ? '' : $this->completedAt->toDateTimeString(),
-            'reserved_at' => $this->reservedAt->timestamp == 0 ? '' : $this->reservedAt->toDateTimeString(),
-            'retried_by' => $this->retriedBy,
-            'viewData' => [
-                'tries' => $this->getTriesString(),
-                'tags' => $this->getTagString(),
-                'pushed_at' => Carbon::createFromTimestamp($this->payload['pushedAt'] ?? 0)->toDateTimeString(),
-                'runtime' => optional($this->getStatistic())->runtime,
-                'delayed' => $this->isDelayed(),
-                'delayed_until' => $this->getDelayedUntil()
-            ]
-        ];
     }
 }
